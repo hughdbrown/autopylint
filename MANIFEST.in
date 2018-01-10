@@ -1,0 +1,9 @@
+exclude .gitignore
+exclude .travis.yml
+exclude .coverage
+include README.md
+prune .git
+prune build
+prune dist
+recusrive-exclude *.egg-info *
+recursive-include src *

@@ -1,0 +1,5 @@
+build/
+dist/
+autopylint.egg-info/
+*.pyc
+

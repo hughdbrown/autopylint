@@ -1,0 +1,3 @@
+[submodule "sed"]
+	path = sed
+	url = git@github.com:hughdbrown/sed.git
