@@ -8,6 +8,11 @@ Installation
 ============
 ```
 python setup.py install
+```
+
+Usage
+=====
+```
 pylint some/directory > lintfile
 autopylint lintfile
 ```
