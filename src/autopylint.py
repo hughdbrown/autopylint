@@ -31,13 +31,7 @@ from src.action_regex import (
     CONTINUATION,
     HANGING,
 )
-from src.repair_regex import (
-    ASSIGNMENTS,
-    COMPARISONS,
-    START_BRACKETS,
-    END_BRACKETS,
-    WHITESPACE_TABLE,
-)
+from src.repair_regex import WHITESPACE_TABLE
 
 
 # pylint: disable=logging-format-interpolation
@@ -119,8 +113,9 @@ def line_split(s, length):
     elif re.match(r"^.*?#.*$", s):
         ind0, non_indent = get_indent(s)
         i = non_indent.index('#')
-        non_comment, comment = non_indent[:i].rstrip(), non_comment[i:]
-        if all(len(ind0 + part) < length):
+        non_comment, comment = non_indent[:i].rstrip(), non_indent[i:]
+        if all(len(ind0 + part) < length
+               for part in (comment, non_comment)):
             result = [
                 ind0 + comment,
                 ind0 + non_comment,
@@ -129,18 +124,18 @@ def line_split(s, length):
             result = None
     else:
         ind0, non_indent = get_indent(s)
-        ind2 = ind0 + 2 * "    "
+        ind1 = ind0 + 2 * "    "
         m1 = IF_STMT_OR.match(non_indent)
         m2 = IF_STMT_AND.match(non_indent)
         if m1 or m2:
             g, conj = (
-                m1.groupdict(), " or" if m1 else
-                m2.groupdict(), " and"
+                (m1.groupdict(), " or") if m1 else
+                (m2.groupdict(), " and")
             )
             result = [
                 ind0 + "if (",
-                ind2 + g["first"] + conj,
-                ind2 + g["second"],
+                ind1 + g["first"] + conj,
+                ind1 + g["second"],
                 ind0 + "):"
             ]
         else:
@@ -153,8 +148,13 @@ def line_split(s, length):
             cv = [a for a in counts.values() if a]
             if cv:
                 mi, ma = min(a[0] for a in cv), max(a[-1] for a in cv)
-                if (s[mi] + s[ma]) in {'()', '{}', '[]'}:
-                    result = [s[:mi + 1], ind1 + s[mi + 1:ma], ind0 + s[ma:]]
+                pair = s[mi] + s[ma]
+                if pair in {'()', '{}', '[]'}:
+                    result = [
+                        s[:mi + 1],
+                        ind1 + s[mi + 1:ma],
+                        ind0 + s[ma:]
+                    ]
                 else:
                     result = None
             else:
@@ -322,6 +322,7 @@ def invalid_name(editor, item):
 def unused_import(editor, item):
     """ Pylint method to fix unused_import error """
     line_no = item.line_no
+    result = (line_no, 0)
     error_text = editor.lines[line_no]
     remove = item.desc.split(' ')[1]
     m = FROM_IMP.match(error_text)
@@ -339,7 +340,7 @@ def unused_import(editor, item):
             LOGGER.debug("deleting: {0}".format(loc))
             LOGGER.debug("0 <= {0} <= {1} <= {2}".format(loc[0], loc[1], len(editor.lines)))
             editor.delete_range(loc)
-            return (line_no + 1, -1)
+            result = (line_no + 1, -1)
         else:
             # Format a new line with the unused removed and the remaining imports sorted
             repaired_line = "from {0} import {1}".format(
@@ -348,8 +349,7 @@ def unused_import(editor, item):
             )
             loc = (line_no, line_no + 1)
             editor.replace_range(loc, [repaired_line])
-            return (line_no, 0)
-    return (line_no, 0)
+    return result
 
 
 def misplaced_comparison_constant(editor, item):
@@ -474,13 +474,14 @@ def line_too_long(editor, item):
     new_lines = line_split(error_text, 100)
     if not new_lines:
         LOGGER.info("Could not split: {0}".format(error_text))
-        return (line_no, 0)
+        result = (line_no, 0)
     else:
         assert isinstance(new_lines, list), new_lines
         assert all(isinstance(s, str) for s in new_lines)
         x = len(new_lines)
         editor.replace_range((line_no, line_no + 1), new_lines)
-        return (line_no, x - 1)
+        result = (line_no, x - 1)
+    return result
 
 
 def no_op(_, item):
