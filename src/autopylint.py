@@ -4,8 +4,6 @@ Streaming editor for modifying python files
 This script uses the `sed` python package to programmatically
 inject decorators at the head of function definitions.
 """
-from __future__ import print_function
-
 import os.path
 import sys
 import re
