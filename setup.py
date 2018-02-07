@@ -1,9 +1,11 @@
+""" setup for for autopylint """
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
 
 
 def reqs_from_file(filename):
+    """ Read the setup requirements from a requirements file """
     with open(filename) as f:
         lineiter = (line.rstrip() for line in f if not line.startswith("#"))
         return list(filter(None, lineiter))
@@ -11,7 +13,7 @@ def reqs_from_file(filename):
 
 setup(
     name='autopylint',
-    version='0.0.1',
+    version='0.0.2',
     description='Tool for automatically applying fixes to errors/warnings identified by pylint',
     author='Hugh Brown',
     author_email='hughdbrown@yahoo.com',
