@@ -3,6 +3,7 @@ exclude .travis.yml
 exclude .coverage
 include README.md
 include LICENSE
+include requirements.txt
 prune .git
 prune build
 prune dist

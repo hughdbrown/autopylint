@@ -13,7 +13,7 @@ def reqs_from_file(filename):
 
 setup(
     name='autopylint',
-    version='0.0.2',
+    version='0.0.3',
     description='Tool for automatically applying fixes to errors/warnings identified by pylint',
     author='Hugh Brown',
     author_email='hughdbrown@yahoo.com',
